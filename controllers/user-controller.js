@@ -20,7 +20,7 @@ const userController = {
       .select("-__v")
       .populate({
         path: "thoughts",
-        path: 'users',
+        path: "users",
         select: "-__v",
       })
       .then((dbUserData) => {
@@ -67,6 +67,42 @@ const userController = {
       .then((dbUserData) => res.json(dbUserData))
       .catch((err) => {
         console.log(err);
+        res.status(500).json(err);
+      });
+  },
+  addFriend({ params }, res) {
+    User.findOneAndUpdate(
+      { _id: params.userId },
+      { $addToSet: { friends: params.friendId } },
+      { new: true, runValidators: true }
+    )
+      .then((dbUserData) => {
+        if (!dbUserData) {
+          res.status(404).json({ message: "User(s) not found!" });
+          return;
+        }
+
+        res.json(dbUserData);
+      })
+      .catch((err) => {
+        res.status(500).json(err);
+      });
+  },
+  removeFriend({ params }, res) {
+    User.findOneAndUpdate(
+      { _id: params.userId },
+      { $pull: { friends: params.friendId } },
+      { new: true, runValidators: true }
+    )
+      .then((dbUserData) => {
+        if (!dbUserData) {
+          res.status(404).json({ message: "User(s) not found!" });
+          return;
+        }
+
+        res.json(dbUserData);
+      })
+      .catch((err) => {
         res.status(500).json(err);
       });
   },
